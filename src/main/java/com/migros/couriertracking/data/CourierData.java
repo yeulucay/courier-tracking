@@ -3,9 +3,7 @@ package com.migros.couriertracking.data;
 import com.migros.couriertracking.model.WayPoint;
 
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /*
 * Courier Singleton Repo
@@ -22,6 +20,9 @@ public class CourierData {
 
         if (instance == null) {
             instance = new CourierData();
+
+            instance.courierTracks = new HashMap<>();
+            instance.courierInfo = new HashMap<>();
         }
         return instance;
     }
@@ -29,7 +30,11 @@ public class CourierData {
     public void addTrack(WayPoint wp) {
         String name = String.valueOf(wp.name());
         List<WayPoint> tracks = courierTracks.get(name);
+        if (tracks == null) {
+            tracks = new ArrayList<>();
+        }
         tracks.add(wp);
+
         courierTracks.put(name, tracks);
     }
 

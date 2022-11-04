@@ -23,10 +23,15 @@ public class CourierService {
      * When it finds the nearest, then gets the distance with it.
      * CourierData structure holds courier info, like track history and last closed store and time.
      * */
-    public void trackCourier(TrackDto dto) {
+    public void trackCourier(TrackDto dto) throws Exception  {
         WayPoint courierPoint = new WayPoint(dto.courier(), dto.lat(), dto.lng());
 
-        CourierData.getInstance().addTrack(courierPoint);
+        try {
+            CourierData.getInstance().addTrack(courierPoint);
+        } catch(Exception ex) {
+            logger.error("error while storing courier track data", ex);
+            throw new Exception("internal server error");
+        }
 
         // nearest store to the courier's current location
         WayPoint nearest = StoreData.getInstance().getNearest(courierPoint);
@@ -45,7 +50,14 @@ public class CourierService {
                         && (courierInfo.lastStore() != nearest.name() || courierInfo.lastEntrance().plusSeconds(60).isBefore(Instant.now())))) {
             // if courier is close to any store
             logger.info(String.format("courier %s is close to: %s", dto.courier(), nearest.name()));
-            CourierData.getInstance().setInfo(dto.courier(), new CourierData.CourierInfo(nearest.name(), Instant.now()));
+
+            try {
+                CourierData.getInstance().setInfo(dto.courier(), new CourierData.CourierInfo(nearest.name(), Instant.now()));
+            } catch(Exception ex) {
+                //TODO: rollback or any backup is required
+                logger.error("error while storing courier info", ex);
+                throw new Exception("internal server error");
+            }
         }
     }
 
