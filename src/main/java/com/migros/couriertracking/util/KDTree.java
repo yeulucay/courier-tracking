@@ -7,6 +7,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * K-Dimension Tree Implementation
+ * Copied! https://stackoverflow.com/questions/19218081/how-to-calculate-distance-from-different-markers-in-a-map-and-then-pick-up-the-l/19390750#19390750
+ * Modified for this project.
+ */
 public class KDTree {
 
     private XYZComparator xComparator = new XYZComparator(0);
@@ -16,16 +21,17 @@ public class KDTree {
             zComparator };
 
     /**
-     * Create a KDTree from a list of lat/lon coordinates. Returns the root-node
+     * Create a KDTree from a list of WayPoint. Returns the root-node
      * of the tree.
      */
-    public KDTNode createTree(List<WayPoint> recList) {
-        List<XYZ> xyzList = convertTo3Dimensions(recList);
+    public KDTNode inject(List<WayPoint> wpList) {
+        List<XYZ> xyzList = convertTo3Dimensions(wpList);
         return createTreeRecursive(0, xyzList);
     }
 
+
     /**
-     * Traverse the tree and find the point nearest to wp.
+     * Finds the nearest waypoint
      */
     public WayPoint findNearestWp(KDTNode root, WayPoint wp) {
         KDTResult result = new KDTResult();
@@ -34,10 +40,11 @@ public class KDTree {
         return result.nearestWp;
     }
 
-    /** Convert lat/lon coordinates into a 3 dimensional xyz system. */
+    /**
+     * Convert lat/lon coordinates into a 3 dimensional xyz system.
+     */
     private XYZ convertTo3Dimensions(WayPoint wp) {
-        // See e.g.
-        // http://stackoverflow.com/questions/8981943/lat-long-to-x-y-z-position-in-js-not-working
+
         double cosLat = Math.cos(wp.lat() * Math.PI / 180.0);
         double sinLat = Math.sin(wp.lat() * Math.PI / 180.0);
         double cosLon = Math.cos(wp.lng() * Math.PI / 180.0);
@@ -56,7 +63,7 @@ public class KDTree {
     }
 
     private List<XYZ> convertTo3Dimensions(List<WayPoint> recList) {
-        List<XYZ> result = new ArrayList<XYZ>();
+        List<XYZ> result = new ArrayList<>();
         for (WayPoint latLng : recList) {
             XYZ xyz = convertTo3Dimensions(latLng);
             result.add(xyz);
@@ -66,14 +73,13 @@ public class KDTree {
 
     private static void findNearestWpRecursive(KDTNode node, XYZ wp,
                                                KDTResult result) {
-        /* If a leaf node, calculate distance and return. */
+        // If a leaf node
         if (node.isLeaf) {
             double xDiff = node.xyz.x - wp.x;
             double yDiff = node.xyz.y - wp.y;
             double zDiff = node.xyz.z - wp.z;
             double squareDist = xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
-            // Replace a previously found nearestDest only if the new one is
-            // nearer.
+
             if (result.nearestWp == null || result.squareDistance > squareDist) {
                 result.nearestWp = node.xyz.wp;
                 result.squareDistance = squareDist;
@@ -82,7 +88,7 @@ public class KDTree {
         }
         int devidedByDimension = node.depth % 3;
         boolean goLeft;
-        /* Check whether left or right is more promising. */
+        // Check whether left or right is more promising.
         if (devidedByDimension == 0) {
             goLeft = wp.x < node.splitValue;
         } else if (devidedByDimension == 1) {
@@ -116,11 +122,14 @@ public class KDTree {
         sortWayPointListByDimension(recList, dimension);
         List<XYZ> leftList = getHalfOf(recList, true);
         List<XYZ> rightList = getHalfOf(recList, false);
+
         // Get split point and distance to last left and first right point.
         XYZ lastLeft = leftList.get(leftList.size() - 1);
         XYZ firstRight = rightList.get(0);
+
         double minDistanceToSplitValue;
         double splitValue;
+
         if (dimension == 0) {
             minDistanceToSplitValue = (firstRight.x - lastLeft.x) / 2;
             splitValue = lastLeft.x + Math.abs(minDistanceToSplitValue);
@@ -131,6 +140,7 @@ public class KDTree {
             minDistanceToSplitValue = (firstRight.z - lastLeft.z) / 2;
             splitValue = lastLeft.z + Math.abs(minDistanceToSplitValue);
         }
+
         node.splitValue = splitValue;
         node.minSquareDistance = minDistanceToSplitValue
                 * minDistanceToSplitValue;
@@ -191,7 +201,9 @@ public class KDTree {
 
     }
 
-    /** 3 Dimensional coordinates of a waypoint. */
+    /**
+     * 3 Dimensional coordinates of a waypoint.
+     */
     static class XYZ {
         double x;
         double y;
@@ -200,7 +212,9 @@ public class KDTree {
         WayPoint wp;
     }
 
-    /** Node of the KDTree */
+    /**
+     * Node of the KDTree
+     */
     public static class KDTNode {
 
         KDTNode left;
@@ -221,7 +235,9 @@ public class KDTree {
 
     }
 
-    /** Holds the result of a tree traversal. */
+    /**
+     * Holds the result of a tree traversal.
+     */
     static class KDTResult {
         WayPoint nearestWp;
         // We use the square of the distance to avoid square-root operations.

@@ -21,7 +21,7 @@ public class StoreData {
 
             WayPoint[] wayPoints = instance.readStores();
             instance.tree = new KDTree();
-            instance.root = instance.tree.createTree(Arrays.asList(wayPoints));
+            instance.root = instance.tree.inject(Arrays.asList(wayPoints));
         }
 
         return instance;
