@@ -8,6 +8,10 @@ to be able to search fast in case large amount of data.
 
 All data storage is in **CourierData** and **StoreData** classes. 
 
+```
+Important! As the usage of 'record' types, Java 14 or later version is required.
+```
+
 | Path                         | Description                     |
 |------------------------------|---------------------------------|
  | POST /courier/track          | Creates new track for courier   |
